@@ -38,6 +38,11 @@
   }
   .icon-btn.back{left:0;} .icon-btn.edit{right:0;}
 
+  .banner{
+    background:color-mix(in srgb, var(--gold) 15%, var(--card)); border:1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+    border-radius:10px; padding:9px 11px; font-size:11.5px; color:var(--ink-soft); margin-bottom:14px; line-height:1.5;
+  }
+
   /* ---------- Home ---------- */
   .plan-card{
     background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
@@ -46,11 +51,12 @@
   .plan-card .row1{display:flex; align-items:center; gap:8px;}
   .swatch{width:14px; height:14px; border-radius:50%; flex:0 0 auto; border:1px solid rgba(0,0,0,.08);}
   .plan-name{font-family:var(--serif); font-size:17px; flex:1;}
+  .role-tag{font-size:10px; padding:2px 7px; border-radius:20px; background:var(--paper-dark); color:var(--ink-soft);}
   .plan-range{font-size:11.5px; color:var(--ink-soft); margin:4px 0 10px;}
   .plan-progress{
     height:6px; background:var(--paper-dark); border-radius:4px; overflow:hidden; margin-bottom:10px;
   }
-  .plan-progress > div{height:100%; background:var(--sage);}
+  .plan-progress > div{height:100%; background:var(--sage); transition:width .3s;}
   .plan-actions{display:flex; gap:8px;}
   .plan-actions button{
     flex:1; padding:8px 0; border-radius:8px; font-size:12.5px; cursor:pointer;
@@ -62,18 +68,23 @@
     text-align:center; padding:40px 10px; color:var(--ink-soft); font-size:13px;
     border:1px dashed var(--line); border-radius:var(--radius); margin-bottom:16px;
   }
-  .new-plan-btn{
-    width:100%; padding:13px 0; border-radius:12px; border:1px dashed var(--accent);
-    background:transparent; color:var(--accent); font-size:14px; cursor:pointer; margin-top:4px;
+  .home-btn-row{display:flex; gap:8px; margin-top:4px;}
+  .new-plan-btn, .join-plan-btn{
+    flex:1; padding:13px 0; border-radius:12px; border:1px dashed var(--accent);
+    background:transparent; color:var(--accent); font-size:13.5px; cursor:pointer;
     font-family:var(--sans); letter-spacing:.5px;
   }
+  .join-plan-btn{border-style:solid; border-color:var(--line); color:var(--ink);}
 
-  /* ---------- Editor ---------- */
+  /* ---------- Editor / Join ---------- */
   .field{margin-bottom:16px;}
   .field label{display:block; font-size:12px; color:var(--ink-soft); margin-bottom:5px; letter-spacing:.5px;}
   .field input[type=text], .field input[type=date]{
     width:100%; padding:10px 11px; border-radius:9px; border:1px solid var(--line);
     background:var(--card); font-size:14px; color:var(--ink); font-family:var(--sans);
+  }
+  .field input.code-input{
+    text-align:center; font-family:var(--mono); font-size:22px; letter-spacing:6px; text-transform:uppercase;
   }
   .date-pair{display:flex; gap:10px;}
   .date-pair .field{flex:1;}
@@ -83,9 +94,7 @@
     display:flex; align-items:center; justify-content:center; font-size:13px;
   }
   .theme-dot.selected{border-color:var(--ink);}
-  .item-editor-row{
-    display:flex; gap:6px; align-items:center; margin-bottom:7px;
-  }
+  .item-editor-row{display:flex; gap:6px; align-items:center; margin-bottom:7px;}
   .item-editor-row input{
     padding:8px; border-radius:7px; border:1px solid var(--line); font-size:12.5px; background:var(--card); color:var(--ink);
   }
@@ -105,14 +114,19 @@
     color:var(--ink); font-size:12px; cursor:pointer;
   }
   .save-bar{display:flex; gap:8px; margin-top:6px;}
-  .save-bar button{
-    flex:1; padding:12px 0; border-radius:10px; font-size:13.5px; cursor:pointer; font-family:var(--sans);
-  }
+  .save-bar button{flex:1; padding:12px 0; border-radius:10px; font-size:13.5px; cursor:pointer; font-family:var(--sans);}
   .save-bar .save{background:var(--ink); color:var(--paper); border:1px solid var(--ink);}
   .save-bar .cancel{background:transparent; color:var(--ink-soft); border:1px solid var(--line);}
   .hint{font-size:11px; color:var(--ink-soft); margin:-8px 0 16px;}
 
-  /* ---------- Day view (reused) ---------- */
+  /* ---------- Day view ---------- */
+  .util-row{display:flex; gap:8px; margin-bottom:14px;}
+  .util-row button{
+    padding:9px 0; border-radius:9px; border:1px solid var(--line); background:var(--card);
+    color:var(--ink); font-size:12px; cursor:pointer; font-family:var(--mono); letter-spacing:1px;
+  }
+  .util-row .share-btn{flex:1;}
+  .util-row .refresh-btn{width:40px;}
   .stat-row{display:flex; gap:10px; margin:16px 0 6px;}
   .stat{flex:1; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:10px 8px; text-align:center;}
   .stat .num{font-family:var(--serif); font-size:20px;} .stat .num.gold{color:var(--gold);}
@@ -165,7 +179,7 @@
   .export-bar button{flex:1; padding:11px 0; border-radius:10px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-size:13px; cursor:pointer; font-family:var(--sans); letter-spacing:0.5px;}
   .export-bar button.secondary{background:transparent; color:var(--ink); border-color:var(--line);}
   footer{text-align:center; margin-top:20px; font-size:10.5px; color:var(--ink-soft);}
-  .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); padding:9px 16px; border-radius:20px; font-size:12.5px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:50;}
+  .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); padding:9px 16px; border-radius:20px; font-size:12.5px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:50; max-width:85%; text-align:center;}
   .toast.show{opacity:1;}
 </style>
 </head>
@@ -175,8 +189,9 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = 'checkin-app-v2';
+  const INDEX_KEY = 'checkin-index-v3';
   const WD = ['周日','周一','周二','周三','周四','周五','周六'];
+  const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXY3456789';
   const THEMES = [
     {id:'passport', name:'护照米黄', paper:'#FBF6EC', paperDark:'#F2E9D8', ink:'#25314F', accent:'#C8503D', gold:'#D9A441', line:'#DCD2B8'},
     {id:'ocean',     name:'海洋蓝',   paper:'#EEF5F9', paperDark:'#E3EEF3', ink:'#1B3A4B', accent:'#2E7DA6', gold:'#DDA34D', line:'#CFE1E8'},
@@ -202,50 +217,75 @@
     {cat:'家务', badge:'①', label:'晾衣服 / 倒垃圾'},
   ].map((it,i)=>({id:'tpl'+i, points:1, ...it}));
 
-  let db = { plans:{}, order:[] };
-  let view = 'home';          // home | editor | day
-  let activePlanId = null;
+  // 云端共享存储是否可用：只有在 Claude 内打开此页面时才有，
+  // 家长/孩子之间的邀请码同步依赖这个能力。
+  const hasCloudStorage = (typeof window.storage !== 'undefined' && window.storage && typeof window.storage.set === 'function');
+
+  let personalIndex = [];     // [{code, name, theme, role:'owner'|'joined'}]
+  let plansCache = {};        // code -> full plan object
+  let view = 'home';          // home | editor | join | day
+  let activeCode = null;
   let curIdx = 0;
-  let editorState = null;     // {mode:'create'|'edit'|'duplicate', sourceId, name, startDate, endDate, theme, items:[]}
+  let editorState = null;
   let saveTimer = null;
-  let armedDelete = null;     // id currently armed for delete confirmation
+  let armedDelete = null;
 
   const app = document.getElementById('app');
 
   function uid(prefix){ return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-
+  function genCode(){
+    let s=''; for(let i=0;i<6;i++) s += CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)];
+    return s;
+  }
   function showToast(msg){
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'), 1400);
+    setTimeout(()=>t.classList.remove('show'), 1600);
   }
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-  // 优先使用 Claude 提供的云端存储；如果不可用（比如把网页下载到本地直接用浏览器打开），
-  // 自动改用浏览器自带的 localStorage，保证在任何环境下都能正常保存。
-  const hasCloudStorage = (typeof window.storage !== 'undefined' && window.storage && typeof window.storage.set === 'function');
-
-  async function loadDb(){
-    if(hasCloudStorage){
-      const res = await window.storage.get(STORAGE_KEY, false);
-      return res && res.value ? res.value : null;
-    } else {
-      return localStorage.getItem(STORAGE_KEY);
-    }
+  // ---------------- 存储层 ----------------
+  // 个人索引：记录这台设备/这个人参与了哪些计划（仅本机可见）
+  async function loadIndex(){
+    try{
+      if(hasCloudStorage){
+        const r = await window.storage.get(INDEX_KEY, false);
+        return r && r.value ? JSON.parse(r.value) : [];
+      } else {
+        const raw = localStorage.getItem(INDEX_KEY);
+        return raw ? JSON.parse(raw) : [];
+      }
+    }catch(e){ return []; }
   }
-  async function persistDb(){
-    if(hasCloudStorage){
-      await window.storage.set(STORAGE_KEY, JSON.stringify(db), false);
-    } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-    }
+  async function saveIndex(){
+    try{
+      if(hasCloudStorage) await window.storage.set(INDEX_KEY, JSON.stringify(personalIndex), false);
+      else localStorage.setItem(INDEX_KEY, JSON.stringify(personalIndex));
+    }catch(e){ showToast('保存失败，请重试'); console.error(e); }
   }
-
-  function scheduleSave(){
+  // 计划数据：hasCloudStorage 时用"共享存储"（家长孩子共用同一份），
+  // 否则退化为仅本机可见的存储（此时邀请码无法跨设备同步）。
+  async function planGet(code){
+    try{
+      if(hasCloudStorage){
+        const r = await window.storage.get('plan-'+code, true);
+        return r && r.value ? JSON.parse(r.value) : null;
+      } else {
+        const raw = localStorage.getItem('plan-'+code);
+        return raw ? JSON.parse(raw) : null;
+      }
+    }catch(e){ return null; }
+  }
+  async function planSet(plan){
+    plan.updatedAt = Date.now();
+    try{
+      if(hasCloudStorage) await window.storage.set('plan-'+plan.code, JSON.stringify(plan), true);
+      else localStorage.setItem('plan-'+plan.code, JSON.stringify(plan));
+    }catch(e){ showToast('保存失败，请重试'); console.error(e); }
+  }
+  function schedulePlanSave(plan){
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(async ()=>{
-      try{ await persistDb(); }
-      catch(e){ showToast('保存失败，请重试'); console.error(e); }
-    }, 250);
+    saveTimer = setTimeout(()=>{ planSet(plan); }, 250);
   }
 
   function applyTheme(themeId){
@@ -270,39 +310,64 @@
     }
     return out;
   }
-
   function todayKey(){ return new Date().toISOString().slice(0,10); }
+
+  function dayCompletion(plan, key){
+    const d = plan.days[key];
+    if(!d || !plan.items.length) return 0;
+    const checked = plan.items.filter(it => d.items[it.id]).length;
+    return checked / plan.items.length;
+  }
+  function autoPoints(plan, dayData){
+    return plan.items.reduce((sum,it)=> sum + (dayData.items[it.id] ? (it.points!=null?it.points:1) : 0), 0);
+  }
+  function dayTotalPoints(plan, key){
+    const dd = plan.days[key];
+    if(!dd) return 0;
+    return autoPoints(plan, dd) + (dd.bonus != null ? dd.bonus : (dd.gold||0));
+  }
+  function getDay(plan, key){
+    if(!plan.days[key]) plan.days[key] = {items:{}, bonus:0};
+    const d = plan.days[key];
+    if(d.bonus == null) d.bonus = d.gold || 0;
+    return d;
+  }
 
   // ---------------- HOME ----------------
   function renderHome(){
     applyTheme(THEMES[0].id);
-    const ids = db.order;
+    const banner = !hasCloudStorage ? `<div class="banner">当前不在 Claude 内打开，数据只保存在本设备浏览器里，"邀请码"无法和其他设备同步。要和孩子共享打卡数据，请在 Claude App/网页里打开这个页面后再操作。</div>` : '';
     let cards = '';
-    if(ids.length===0){
-      cards = `<div class="empty-state">还没有计划，点下面按钮新建一个吧</div>`;
+    if(personalIndex.length===0){
+      cards = `<div class="empty-state">还没有计划<br>新建一个，或输入邀请码加入孩子/家长创建的计划</div>`;
     } else {
-      cards = ids.map(id=>{
-        const p = db.plans[id];
-        if(!p) return '';
-        const theme = THEMES.find(t=>t.id===p.theme) || THEMES[0];
-        const dates = dateRangeArray(p.startDate, p.endDate);
-        const total = dates.length;
-        const done = dates.filter(d=>dayCompletion(p, d.key)>=1).length;
-        const pct = total ? Math.round(done/total*100) : 0;
-        const range = total ? `${dates[0].month}月${dates[0].date}日 - ${dates[total-1].month}月${dates[total-1].date}日 · 共${total}天` : '日期范围无效';
-        const isArmed = armedDelete===id;
+      cards = personalIndex.map(entry=>{
+        const plan = plansCache[entry.code];
+        const theme = THEMES.find(t=>t.id===(plan?plan.theme:entry.theme)) || THEMES[0];
+        const isArmed = armedDelete===entry.code;
+        let mid;
+        if(!plan){
+          mid = `<div class="plan-range">加载中…</div><div class="plan-progress"><div style="width:0%"></div></div>`;
+        } else {
+          const dates = dateRangeArray(plan.startDate, plan.endDate);
+          const total = dates.length;
+          const done = dates.filter(d=>dayCompletion(plan, d.key)>=1).length;
+          const pct = total ? Math.round(done/total*100) : 0;
+          const range = total ? `${dates[0].month}月${dates[0].date}日 - ${dates[total-1].month}月${dates[total-1].date}日 · 共${total}天` : '日期范围无效';
+          mid = `<div class="plan-range">${range} · 已完成 ${done}/${total} 天</div><div class="plan-progress"><div style="width:${pct}%; background:${theme.accent}"></div></div>`;
+        }
         return `
         <div class="plan-card">
           <div class="row1">
             <div class="swatch" style="background:${theme.accent}"></div>
-            <div class="plan-name">${escapeHtml(p.name)}</div>
+            <div class="plan-name">${escapeHtml(entry.name)}</div>
+            <div class="role-tag">${entry.role==='owner'?'我创建的':'已加入'} · ${entry.code}</div>
           </div>
-          <div class="plan-range">${range} · 已完成 ${done}/${total} 天</div>
-          <div class="plan-progress"><div style="width:${pct}%; background:${theme.accent}"></div></div>
+          ${mid}
           <div class="plan-actions">
-            <button class="primary" data-act="open" data-id="${id}">打开</button>
-            <button data-act="dup" data-id="${id}">复制</button>
-            <button class="${isArmed?'danger-arm':''}" data-act="del" data-id="${id}">${isArmed?'确定删除？':'删除'}</button>
+            <button class="primary" data-act="open" data-code="${entry.code}">打开</button>
+            <button data-act="dup" data-code="${entry.code}">复制</button>
+            <button class="${isArmed?'danger-arm':''}" data-act="del" data-code="${entry.code}">${isArmed?'确定移除？':'移除'}</button>
           </div>
         </div>`;
       }).join('');
@@ -313,56 +378,99 @@
         <h1>计划🔛打卡</h1>
         <div class="subtitle">我的计划</div>
       </header>
+      ${banner}
       ${cards}
-      <button class="new-plan-btn" id="newPlanBtn">＋ 新建计划</button>
+      <div class="home-btn-row">
+        <button class="new-plan-btn" id="newPlanBtn">＋ 新建计划</button>
+        <button class="join-plan-btn" id="joinPlanBtn">🔗 输入邀请码加入</button>
+      </div>
       <footer>数据保存在此页面中 · 建议定期导出备份</footer>
     `;
-    app.querySelectorAll('[data-act="open"]').forEach(b=>b.addEventListener('click', ()=>{ activePlanId=b.dataset.id; curIdx=0; view='day'; render(); }));
-    app.querySelectorAll('[data-act="dup"]').forEach(b=>b.addEventListener('click', ()=>{ openEditor('duplicate', b.dataset.id); }));
+    app.querySelectorAll('[data-act="open"]').forEach(b=>b.addEventListener('click', async ()=>{
+      activeCode=b.dataset.code; curIdx=0; view='day'; render();
+    }));
+    app.querySelectorAll('[data-act="dup"]').forEach(b=>b.addEventListener('click', ()=> openEditor('duplicate', b.dataset.code)));
     app.querySelectorAll('[data-act="del"]').forEach(b=>b.addEventListener('click', ()=>{
-      if(armedDelete===b.dataset.id){
-        const id=b.dataset.id;
-        delete db.plans[id];
-        db.order = db.order.filter(x=>x!==id);
+      if(armedDelete===b.dataset.code){
+        const code=b.dataset.code;
+        personalIndex = personalIndex.filter(x=>x.code!==code);
+        delete plansCache[code];
         armedDelete=null;
-        scheduleSave(); render();
-        showToast('计划已删除');
+        saveIndex(); render();
+        showToast('已从本机移除（不会删除对方设备上的计划）');
       } else {
-        armedDelete = b.dataset.id;
+        armedDelete = b.dataset.code;
         render();
-        setTimeout(()=>{ if(armedDelete===b.dataset.id){ armedDelete=null; render(); } }, 3000);
+        setTimeout(()=>{ if(armedDelete===b.dataset.code){ armedDelete=null; render(); } }, 3000);
       }
     }));
     document.getElementById('newPlanBtn').addEventListener('click', ()=> openEditor('create'));
+    document.getElementById('joinPlanBtn').addEventListener('click', ()=>{ view='join'; render(); });
+
+    // 异步刷新每个卡片的真实数据（尤其是共享计划，可能被对方更新过）
+    personalIndex.forEach(async entry=>{
+      const p = await planGet(entry.code);
+      if(p){ plansCache[entry.code]=p; if(view==='home') renderHome(); }
+    });
   }
 
-  function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-  function dayCompletion(plan, key){
-    const d = plan.days[key];
-    if(!d || !plan.items.length) return 0;
-    const checked = plan.items.filter(it => d.items[it.id]).length;
-    return checked / plan.items.length;
+  // ---------------- JOIN ----------------
+  function renderJoin(){
+    applyTheme(THEMES[0].id);
+    app.innerHTML = `
+      <header>
+        <div class="icon-btn back" id="backBtn">‹</div>
+        <div class="eyebrow">JOIN A PLAN</div>
+        <h1>加入计划</h1>
+        <div class="subtitle">输入对方给你的 6 位邀请码</div>
+      </header>
+      <div class="field">
+        <input type="text" id="codeInput" class="code-input" maxlength="6" placeholder="ABC123">
+      </div>
+      <div class="save-bar">
+        <button class="cancel" id="cancelBtn">取消</button>
+        <button class="save" id="joinBtn">加入</button>
+      </div>
+      ${!hasCloudStorage ? `<div class="banner" style="margin-top:16px;">提示：当前未在 Claude 内打开，只能加入本设备上创建过的计划，无法跨设备同步。</div>` : ''}
+    `;
+    document.getElementById('backBtn').addEventListener('click', ()=>{ view='home'; render(); });
+    document.getElementById('cancelBtn').addEventListener('click', ()=>{ view='home'; render(); });
+    const input = document.getElementById('codeInput');
+    input.addEventListener('input', ()=>{ input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g,''); });
+    document.getElementById('joinBtn').addEventListener('click', async ()=>{
+      const code = input.value.trim();
+      if(code.length<4){ showToast('请输入完整邀请码'); return; }
+      showToast('正在查找…');
+      const plan = await planGet(code);
+      if(!plan){ showToast('找不到该计划，请确认邀请码是否正确，并确保双方都在 Claude 内打开此页面'); return; }
+      if(!personalIndex.find(x=>x.code===code)){
+        personalIndex.unshift({code, name:plan.name, theme:plan.theme, role:'joined'});
+        saveIndex();
+      }
+      plansCache[code] = plan;
+      activeCode = code; curIdx=0; view='day'; render();
+      showToast('已加入计划');
+    });
   }
 
   // ---------------- EDITOR ----------------
-  function openEditor(mode, sourceId){
+  function openEditor(mode, sourceCode){
     let name, startDate, endDate, theme, items;
     const today = todayKey();
     const in8w = new Date(); in8w.setDate(in8w.getDate()+55);
     if(mode==='create'){
-      name = ''; startDate = today; endDate = in8w.toISOString().slice(0,10);
-      theme = THEMES[0].id; items = TEMPLATE_ITEMS.map(it=>({...it, id:uid('it')}));
+      name=''; startDate=today; endDate=in8w.toISOString().slice(0,10);
+      theme=THEMES[0].id; items=TEMPLATE_ITEMS.map(it=>({...it, id:uid('it')}));
     } else if(mode==='duplicate'){
-      const src = db.plans[sourceId];
-      name = src.name + ' 副本'; startDate = src.startDate; endDate = src.endDate;
-      theme = src.theme; items = src.items.map(it=>({...it, id:uid('it')}));
+      const src = plansCache[sourceCode];
+      name = src.name+' 副本'; startDate=src.startDate; endDate=src.endDate;
+      theme=src.theme; items=src.items.map(it=>({...it, id:uid('it')}));
     } else { // edit
-      const src = db.plans[sourceId];
-      name = src.name; startDate = src.startDate; endDate = src.endDate;
-      theme = src.theme; items = src.items.map(it=>({...it}));
+      const src = plansCache[sourceCode];
+      name=src.name; startDate=src.startDate; endDate=src.endDate;
+      theme=src.theme; items=src.items.map(it=>({...it}));
     }
-    editorState = { mode, sourceId, name, startDate, endDate, theme, items };
+    editorState = { mode, sourceCode, name, startDate, endDate, theme, items };
     view = 'editor';
     render();
   }
@@ -373,7 +481,7 @@
     const title = st.mode==='create' ? '新建计划' : st.mode==='duplicate' ? '复制计划' : '编辑计划';
     app.innerHTML = `
       <header>
-        ${db.order.length>0 || st.mode==='edit' ? `<div class="icon-btn back" id="backBtn">‹</div>` : ''}
+        <div class="icon-btn back" id="backBtn">‹</div>
         <div class="eyebrow">${st.mode.toUpperCase()}</div>
         <h1>${title}</h1>
       </header>
@@ -392,7 +500,7 @@
         </div>
       </div>
       <div class="field">
-        <label>打卡项目（分类 / 内容 / 徽章可选）</label>
+        <label>打卡项目（分类 / 内容 / 徽章可选 / 积分）</label>
         <div id="itemRows"></div>
         <div class="item-editor-tools">
           <button id="addRowBtn">＋ 添加项目</button>
@@ -406,12 +514,11 @@
       </div>
     `;
     renderItemRows();
-
-    if(document.getElementById('backBtn')) document.getElementById('backBtn').addEventListener('click', ()=>{ view = db.order.length>0?'home':'home'; render(); });
-    document.getElementById('cancelBtn').addEventListener('click', ()=>{ view = db.order.length>0?'home':'home'; render(); });
-    document.getElementById('fName').addEventListener('input', e=> st.name = e.target.value);
-    document.getElementById('fStart').addEventListener('input', e=> st.startDate = e.target.value);
-    document.getElementById('fEnd').addEventListener('input', e=> st.endDate = e.target.value);
+    document.getElementById('backBtn').addEventListener('click', ()=>{ view='home'; render(); });
+    document.getElementById('cancelBtn').addEventListener('click', ()=>{ view='home'; render(); });
+    document.getElementById('fName').addEventListener('input', e=> st.name=e.target.value);
+    document.getElementById('fStart').addEventListener('input', e=> st.startDate=e.target.value);
+    document.getElementById('fEnd').addEventListener('input', e=> st.endDate=e.target.value);
     document.getElementById('themeSwatches').addEventListener('click', e=>{
       const dot = e.target.closest('.theme-dot'); if(!dot) return;
       st.theme = dot.dataset.theme; renderEditor();
@@ -425,9 +532,7 @@
       renderItemRows();
       showToast('已载入示例模板');
     });
-    document.getElementById('clearRowsBtn').addEventListener('click', ()=>{
-      st.items = []; renderItemRows();
-    });
+    document.getElementById('clearRowsBtn').addEventListener('click', ()=>{ st.items=[]; renderItemRows(); });
     document.getElementById('saveBtn').addEventListener('click', saveEditor);
   }
 
@@ -453,55 +558,59 @@
     host.querySelectorAll('.item-editor-row:not(.item-editor-head)').forEach(row=>{
       const idx = +row.dataset.idx;
       row.querySelectorAll('input').forEach(inp=>{
-        inp.addEventListener('input', ()=>{
-          st.items[idx][inp.dataset.f] = inp.dataset.f==='points' ? inp.value : inp.value;
-        });
+        inp.addEventListener('input', ()=>{ st.items[idx][inp.dataset.f] = inp.value; });
       });
-      row.querySelector('.del-btn').addEventListener('click', ()=>{
-        st.items.splice(idx,1); renderItemRows();
-      });
+      row.querySelector('.del-btn').addEventListener('click', ()=>{ st.items.splice(idx,1); renderItemRows(); });
     });
   }
 
-  function saveEditor(){
+  async function saveEditor(){
     const st = editorState;
     if(!st.name.trim()){ showToast('请填写计划名称'); return; }
     if(!st.startDate || !st.endDate || st.startDate > st.endDate){ showToast('日期范围不正确'); return; }
     const cleanItems = st.items.filter(it=>it.label.trim()!=='').map(it=>{
       let pts = parseInt(it.points, 10);
-      if(isNaN(pts) || pts < 0) pts = 1;
+      if(isNaN(pts) || pts<0) pts=1;
       return {id:it.id, cat:it.cat.trim()||'未分类', badge:it.badge.trim(), label:it.label.trim(), points:pts};
     });
     if(cleanItems.length===0){ showToast('请至少添加一个打卡项目'); return; }
 
     if(st.mode==='edit'){
-      const p = db.plans[st.sourceId];
-      p.name = st.name.trim(); p.startDate = st.startDate; p.endDate = st.endDate;
-      p.theme = st.theme; p.items = cleanItems;
-      activePlanId = st.sourceId;
+      const plan = plansCache[st.sourceCode];
+      plan.name=st.name.trim(); plan.startDate=st.startDate; plan.endDate=st.endDate;
+      plan.theme=st.theme; plan.items=cleanItems;
+      await planSet(plan);
+      const entry = personalIndex.find(x=>x.code===st.sourceCode);
+      if(entry){ entry.name=plan.name; entry.theme=plan.theme; }
+      activeCode = st.sourceCode;
     } else {
-      const id = uid('plan');
-      db.plans[id] = {
-        id, name: st.name.trim(), startDate: st.startDate, endDate: st.endDate,
-        theme: st.theme, items: cleanItems, days: {}, createdAt: Date.now()
-      };
-      db.order.unshift(id);
-      activePlanId = id;
+      const code = genCode();
+      const plan = { code, name:st.name.trim(), startDate:st.startDate, endDate:st.endDate, theme:st.theme, items:cleanItems, days:{}, createdAt:Date.now() };
+      await planSet(plan);
+      plansCache[code] = plan;
+      personalIndex.unshift({code, name:plan.name, theme:plan.theme, role:'owner'});
+      activeCode = code;
     }
-    scheduleSave();
-    curIdx = 0; view = 'day'; render();
-    showToast('计划已保存');
+    await saveIndex();
+    curIdx=0; view='day'; render();
+    showToast(st.mode==='edit' ? '计划已更新' : '计划已创建');
   }
 
   // ---------------- DAY VIEW ----------------
-  function renderDay(){
-    const plan = db.plans[activePlanId];
+  async function renderDay(){
+    let plan = plansCache[activeCode];
+    if(!plan){
+      plan = await planGet(activeCode);
+      if(plan) plansCache[activeCode] = plan;
+    }
     if(!plan){ view='home'; render(); return; }
     applyTheme(plan.theme);
     const DATES = dateRangeArray(plan.startDate, plan.endDate);
     if(DATES.length===0){ app.innerHTML = `<div class="empty-state">该计划日期范围无效，请编辑修正</div>`; return; }
     if(curIdx>=DATES.length) curIdx = DATES.length-1;
     const tKey = todayKey();
+    const entry = personalIndex.find(x=>x.code===activeCode);
+    const isOwner = entry && entry.role==='owner';
 
     app.innerHTML = `
       <header>
@@ -511,6 +620,11 @@
         <h1>${escapeHtml(plan.name)}</h1>
         <div class="subtitle">${DATES[0].month}月${DATES[0].date}日 — ${DATES[DATES.length-1].month}月${DATES[DATES.length-1].date}日</div>
       </header>
+      <div class="util-row">
+        <button class="share-btn" id="shareBtn">邀请码 ${plan.code} · 点击复制</button>
+        <button class="refresh-btn" id="refreshBtn" title="拉取最新数据">⟳</button>
+      </div>
+      ${!hasCloudStorage ? `<div class="banner">当前未在 Claude 内打开，邀请码无法跨设备同步，仅本机可见。</div>` : ''}
       <div class="stat-row">
         <div class="stat"><div class="num" id="statStreak">0</div><div class="lab">连续打卡</div></div>
         <div class="stat"><div class="num" id="statDone">0/0</div><div class="lab">完成天数</div></div>
@@ -539,44 +653,34 @@
         <button id="exportCsv">导出 CSV</button>
         <button id="exportJson" class="secondary">导出 JSON</button>
       </div>
-      <footer>数据保存在此页面中 · 建议定期导出备份</footer>
+      <footer>${isOwner ? '你是创建者' : '你已加入该计划'} · 数据${hasCloudStorage?'与邀请码持有者共享同步':'仅保存在本机'}</footer>
     `;
 
     document.getElementById('backBtn').addEventListener('click', ()=>{ view='home'; render(); });
-    document.getElementById('editBtn').addEventListener('click', ()=> openEditor('edit', activePlanId));
+    document.getElementById('editBtn').addEventListener('click', ()=> openEditor('edit', activeCode));
+    document.getElementById('shareBtn').addEventListener('click', async ()=>{
+      try{ await navigator.clipboard.writeText(plan.code); showToast('邀请码已复制，发给对方即可加入'); }
+      catch(e){ showToast('邀请码：'+plan.code); }
+    });
+    document.getElementById('refreshBtn').addEventListener('click', async ()=>{
+      showToast('正在刷新…');
+      const fresh = await planGet(activeCode);
+      if(fresh){ plansCache[activeCode]=fresh; renderDay(); showToast('已刷新'); }
+      else showToast('刷新失败');
+    });
     const todayLink = document.getElementById('todayLink');
     if(todayLink) todayLink.addEventListener('click', ()=>{ curIdx = DATES.findIndex(d=>d.key===tKey); renderDayInner(plan, DATES, true); });
-
     document.getElementById('prevBtn').addEventListener('click', ()=>{ if(curIdx>0){ curIdx--; renderDayInner(plan, DATES, true);} });
     document.getElementById('nextBtn').addEventListener('click', ()=>{ if(curIdx<DATES.length-1){ curIdx++; renderDayInner(plan, DATES, true);} });
-    document.getElementById('goldPlus').addEventListener('click', ()=>{ getDay(plan, DATES[curIdx].key).bonus += 1; scheduleSave(); renderDayInner(plan, DATES, false); });
-    document.getElementById('goldMinus').addEventListener('click', ()=>{ const d=getDay(plan, DATES[curIdx].key); d.bonus=Math.max(0,d.bonus-1); scheduleSave(); renderDayInner(plan, DATES, false); });
+    document.getElementById('goldPlus').addEventListener('click', ()=>{ getDay(plan, DATES[curIdx].key).bonus += 1; schedulePlanSave(plan); renderDayInner(plan, DATES, false); });
+    document.getElementById('goldMinus').addEventListener('click', ()=>{ const d=getDay(plan, DATES[curIdx].key); d.bonus=Math.max(0,d.bonus-1); schedulePlanSave(plan); renderDayInner(plan, DATES, false); });
     document.getElementById('exportCsv').addEventListener('click', ()=> exportCsv(plan, DATES));
     document.getElementById('exportJson').addEventListener('click', ()=> exportJson(plan));
 
     renderDayInner(plan, DATES, true);
   }
 
-  function getDay(plan, key){
-    if(!plan.days[key]) plan.days[key] = {items:{}, bonus:0};
-    const d = plan.days[key];
-    if(d.bonus == null) d.bonus = d.gold || 0; // 兼容旧版本存的 gold 字段
-    return d;
-  }
-
-  // 勾选项目自动累计的积分（每个项目按其设定的积分值计入）
-  function autoPoints(plan, dayData){
-    return plan.items.reduce((sum,it)=> sum + (dayData.items[it.id] ? (it.points!=null?it.points:1) : 0), 0);
-  }
-  // 当天总积分 = 自动累计积分 + 额外奖励
-  function dayTotalPoints(plan, key){
-    const dd = plan.days[key];
-    if(!dd) return 0;
-    return autoPoints(plan, dd) + (dd.bonus != null ? dd.bonus : (dd.gold||0));
-  }
-
   function renderDayInner(plan, DATES, scrollStrip){
-    // strip
     const strip = document.getElementById('dayStrip');
     strip.innerHTML = '';
     DATES.forEach((d,i)=>{
@@ -589,7 +693,6 @@
     });
     if(scrollStrip){ const sel = strip.querySelector('.selected'); if(sel) sel.scrollIntoView({inline:'center', behavior:'smooth'}); }
 
-    // date card
     const d = DATES[curIdx];
     document.getElementById('curDateBig').textContent = `${d.month}月${d.date}日`;
     document.getElementById('curDateWd').textContent = d.wd;
@@ -608,7 +711,7 @@
         row.className = 'item-row' + (dayData.items[it.id] ? ' checked':'');
         const pts = it.points!=null ? it.points : 1;
         row.innerHTML = `<div class="stamp">✓</div><div class="item-label">${escapeHtml(it.label)}${it.badge?` <span style="opacity:.5">${escapeHtml(it.badge)}</span>`:''}</div><div style="font-size:11px; color:var(--gold); flex:0 0 auto;">+${pts}</div>`;
-        row.addEventListener('click', ()=>{ dayData.items[it.id] = !dayData.items[it.id]; scheduleSave(); renderDayInner(plan, DATES, false); });
+        row.addEventListener('click', ()=>{ dayData.items[it.id] = !dayData.items[it.id]; schedulePlanSave(plan); renderDayInner(plan, DATES, false); });
         block.appendChild(row);
       });
       itemsHost.appendChild(block);
@@ -617,7 +720,6 @@
     document.getElementById('goldNum').textContent = auto + (dayData.bonus||0);
     document.getElementById('goldBreakdown').textContent = `打卡自动 ${auto} + 额外奖励 ${dayData.bonus||0}`;
 
-    // weeks overview
     const weeksHost = document.getElementById('weeksHost');
     weeksHost.innerHTML = '';
     const tKey = todayKey();
@@ -638,7 +740,6 @@
       weeksHost.appendChild(row);
     }
 
-    // stats
     let doneDays=0, goldTotal=0;
     DATES.forEach(dt=>{
       if(dayCompletion(plan, dt.key)>=1) doneDays++;
@@ -660,7 +761,6 @@
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(url), 2000);
   }
-
   function exportCsv(plan, DATES){
     const header = ['日期','星期', ...plan.items.map(it=>`${it.cat}-${it.label}(${it.points!=null?it.points:1}分)`), '完成率','自动积分','额外奖励','总积分'];
     const rows = [header];
@@ -687,18 +787,12 @@
   function render(){
     if(view==='home') renderHome();
     else if(view==='editor') renderEditor();
+    else if(view==='join') renderJoin();
     else if(view==='day') renderDay();
   }
 
   async function init(){
-    try{
-      const raw = await loadDb();
-      if(raw){
-        const parsed = JSON.parse(raw);
-        if(parsed.plans) db = parsed;
-      }
-    }catch(e){ /* 无历史数据 */ }
-    if(!hasCloudStorage) showToast('当前在浏览器本地保存数据');
+    personalIndex = await loadIndex();
     render();
   }
   init();
