@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>成长打卡</title>
+<style>
+  :root{
+    --paper:#FBF6EC; --paper-dark:#F2E9D8; --ink:#25314F; --ink-soft:#5B6584;
+    --accent:#C8503D; --gold:#D9A441; --line:#DCD2B8;
+    --sage:#5F8A72; --sage-soft:#DCE9DF; --danger:#C0392B;
+    --card:#FFFFFF; --radius:14px;
+    --serif: Georgia, "Songti SC", "STSong", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --mono: "SF Mono", "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 8%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 40%),
+      radial-gradient(circle at 90% 90%, color-mix(in srgb, var(--gold) 10%, transparent), transparent 45%),
+      var(--paper);
+    color:var(--ink); font-family:var(--sans); min-height:100vh; padding-bottom:40px;
+    transition:background-color .3s;
+  }
+  .wrap{max-width:480px; margin:0 auto; padding:18px 16px 8px;}
+  .hidden{display:none !important;}
+
+  header{text-align:center; padding:14px 0 18px; border-bottom:2px dashed var(--line); margin-bottom:14px; position:relative;}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:3px; color:var(--ink-soft); text-transform:uppercase;}
+  h1{font-family:var(--serif); font-size:24px; margin:6px 0 4px; letter-spacing:1px;}
+  .subtitle{font-size:12.5px; color:var(--ink-soft);}
+  .icon-btn{
+    position:absolute; top:8px; width:32px; height:32px; border-radius:50%;
+    border:1px solid var(--line); background:var(--card); font-size:15px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color:var(--ink);
+  }
+  .icon-btn.back{left:0;} .icon-btn.edit{right:0;}
+
+  /* ---------- Home ---------- */
+  .plan-card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px; margin-bottom:12px; position:relative;
+  }
+  .plan-card .row1{display:flex; align-items:center; gap:8px;}
+  .swatch{width:14px; height:14px; border-radius:50%; flex:0 0 auto; border:1px solid rgba(0,0,0,.08);}
+  .plan-name{font-family:var(--serif); font-size:17px; flex:1;}
+  .plan-range{font-size:11.5px; color:var(--ink-soft); margin:4px 0 10px;}
+  .plan-progress{
+    height:6px; background:var(--paper-dark); border-radius:4px; overflow:hidden; margin-bottom:10px;
+  }
+  .plan-progress > div{height:100%; background:var(--sage);}
+  .plan-actions{display:flex; gap:8px;}
+  .plan-actions button{
+    flex:1; padding:8px 0; border-radius:8px; font-size:12.5px; cursor:pointer;
+    border:1px solid var(--line); background:var(--paper-dark); color:var(--ink);
+  }
+  .plan-actions button.primary{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .plan-actions button.danger-arm{background:var(--danger); color:#fff; border-color:var(--danger);}
+  .empty-state{
+    text-align:center; padding:40px 10px; color:var(--ink-soft); font-size:13px;
+    border:1px dashed var(--line); border-radius:var(--radius); margin-bottom:16px;
+  }
+  .new-plan-btn{
+    width:100%; padding:13px 0; border-radius:12px; border:1px dashed var(--accent);
+    background:transparent; color:var(--accent); font-size:14px; cursor:pointer; margin-top:4px;
+    font-family:var(--sans); letter-spacing:.5px;
+  }
+
+  /* ---------- Editor ---------- */
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12px; color:var(--ink-soft); margin-bottom:5px; letter-spacing:.5px;}
+  .field input[type=text], .field input[type=date]{
+    width:100%; padding:10px 11px; border-radius:9px; border:1px solid var(--line);
+    background:var(--card); font-size:14px; color:var(--ink); font-family:var(--sans);
+  }
+  .date-pair{display:flex; gap:10px;}
+  .date-pair .field{flex:1;}
+  .theme-swatches{display:flex; gap:10px; flex-wrap:wrap;}
+  .theme-dot{
+    width:38px; height:38px; border-radius:50%; cursor:pointer; border:2px solid transparent;
+    display:flex; align-items:center; justify-content:center; font-size:13px;
+  }
+  .theme-dot.selected{border-color:var(--ink);}
+  .item-editor-row{
+    display:flex; gap:6px; align-items:center; margin-bottom:7px;
+  }
+  .item-editor-row input{
+    padding:8px; border-radius:7px; border:1px solid var(--line); font-size:12.5px; background:var(--card); color:var(--ink);
+  }
+  .item-editor-row .cat-in{width:64px; flex:0 0 auto;}
+  .item-editor-row .lab-in{flex:1;}
+  .item-editor-row .badge-in{width:34px; flex:0 0 auto; text-align:center;}
+  .item-editor-row .del-btn{
+    width:26px; height:26px; border-radius:50%; border:1px solid var(--line); background:var(--paper-dark);
+    color:var(--ink-soft); font-size:13px; cursor:pointer; flex:0 0 auto;
+  }
+  .item-editor-tools{display:flex; gap:8px; margin:10px 0 20px;}
+  .item-editor-tools button{
+    flex:1; padding:9px 0; border-radius:8px; border:1px solid var(--line); background:var(--paper-dark);
+    color:var(--ink); font-size:12px; cursor:pointer;
+  }
+  .save-bar{display:flex; gap:8px; margin-top:6px;}
+  .save-bar button{
+    flex:1; padding:12px 0; border-radius:10px; font-size:13.5px; cursor:pointer; font-family:var(--sans);
+  }
+  .save-bar .save{background:var(--ink); color:var(--paper); border:1px solid var(--ink);}
+  .save-bar .cancel{background:transparent; color:var(--ink-soft); border:1px solid var(--line);}
+  .hint{font-size:11px; color:var(--ink-soft); margin:-8px 0 16px;}
+
+  /* ---------- Day view (reused) ---------- */
+  .stat-row{display:flex; gap:10px; margin:16px 0 6px;}
+  .stat{flex:1; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:10px 8px; text-align:center;}
+  .stat .num{font-family:var(--serif); font-size:20px;} .stat .num.gold{color:var(--gold);}
+  .stat .lab{font-size:10.5px; color:var(--ink-soft); margin-top:2px;}
+  .strip-wrap{margin:16px 0 6px;}
+  .strip-label{font-size:11px; color:var(--ink-soft); margin-bottom:6px; font-family:var(--mono); display:flex; justify-content:space-between;}
+  .strip-label a{color:var(--accent); cursor:pointer; text-decoration:none;}
+  .strip{display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; scroll-snap-type:x proximity;}
+  .day-pill{
+    flex:0 0 auto; width:46px; padding:6px 0; border-radius:10px; text-align:center;
+    border:1px solid var(--line); background:var(--card); cursor:pointer; scroll-snap-align:center; position:relative;
+  }
+  .day-pill .wd{font-size:9.5px; color:var(--ink-soft);}
+  .day-pill .dnum{font-family:var(--serif); font-size:15px; margin-top:1px;}
+  .day-pill.done{background:var(--sage-soft); border-color:var(--sage);}
+  .day-pill.selected{outline:2px solid var(--accent); outline-offset:1px;}
+  .day-pill .dot{width:5px;height:5px;border-radius:50%;margin:3px auto 0; background:transparent;}
+  .day-pill.partial .dot{background:var(--gold);}
+  .day-pill.done .dot{background:var(--sage);}
+  .date-card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-top:14px;}
+  .date-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px;}
+  .date-head .big{font-family:var(--serif); font-size:21px;}
+  .date-head .wd{font-size:12px; color:var(--ink-soft);}
+  .nav-btns{display:flex; gap:6px;}
+  .nav-btns button{border:1px solid var(--line); background:var(--paper-dark); border-radius:8px; width:30px; height:30px; font-size:14px; color:var(--ink); cursor:pointer;}
+  .cat-block{margin-bottom:14px;}
+  .cat-title{font-size:11.5px; font-weight:600; color:var(--accent); letter-spacing:1px; margin-bottom:6px; display:flex; align-items:center; gap:5px;}
+  .cat-title .badge{font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); border:1px solid var(--line); border-radius:5px; padding:0 4px;}
+  .item-row{display:flex; align-items:center; gap:10px; padding:9px 4px; border-bottom:1px solid var(--paper-dark); cursor:pointer; -webkit-tap-highlight-color:transparent;}
+  .item-row:last-child{border-bottom:none;}
+  .stamp{width:24px; height:24px; border-radius:50%; border:2px solid var(--line); flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-size:13px; color:transparent; transition:all .15s;}
+  .item-row.checked .stamp{border-color:var(--sage); background:var(--sage-soft); color:var(--sage); font-weight:bold;}
+  .item-label{font-size:13.5px; flex:1;}
+  .item-row.checked .item-label{color:var(--ink-soft); text-decoration:line-through;}
+  .gold-block{display:flex; align-items:center; justify-content:space-between; background:color-mix(in srgb, var(--gold) 18%, var(--card)); border:1px solid color-mix(in srgb, var(--gold) 45%, var(--line)); border-radius:10px; padding:10px 12px; margin-top:8px;}
+  .gold-block .glabel{font-size:13px;}
+  .gold-ctrl{display:flex; align-items:center; gap:10px;}
+  .gold-ctrl button{width:28px; height:28px; border-radius:50%; border:1px solid var(--gold); background:var(--card); color:var(--gold); font-size:16px; cursor:pointer;}
+  .gold-ctrl .gnum{font-family:var(--serif); font-size:18px; min-width:22px; text-align:center; color:var(--gold);}
+  .overview{margin-top:22px;}
+  .overview-title{font-family:var(--serif); font-size:16px; margin-bottom:8px;}
+  .weeks{display:flex; flex-direction:column; gap:5px;}
+  .week-row{display:flex; gap:4px;}
+  .cell{flex:1; aspect-ratio:1; border-radius:5px; background:var(--paper-dark); border:1px solid var(--line); cursor:pointer;}
+  .cell.partial{background:color-mix(in srgb, var(--gold) 55%, var(--paper-dark));}
+  .cell.done{background:var(--sage);}
+  .cell.today{outline:2px solid var(--accent);}
+  .export-bar{display:flex; gap:8px; margin-top:22px;}
+  .export-bar button{flex:1; padding:11px 0; border-radius:10px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-size:13px; cursor:pointer; font-family:var(--sans); letter-spacing:0.5px;}
+  .export-bar button.secondary{background:transparent; color:var(--ink); border-color:var(--line);}
+  footer{text-align:center; margin-top:20px; font-size:10.5px; color:var(--ink-soft);}
+  .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); padding:9px 16px; border-radius:20px; font-size:12.5px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:50;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'checkin-app-v2';
+  const WD = ['周日','周一','周二','周三','周四','周五','周六'];
+  const THEMES = [
+    {id:'passport', name:'护照米黄', paper:'#FBF6EC', paperDark:'#F2E9D8', ink:'#25314F', accent:'#C8503D', gold:'#D9A441', line:'#DCD2B8'},
+    {id:'ocean',     name:'海洋蓝',   paper:'#EEF5F9', paperDark:'#E3EEF3', ink:'#1B3A4B', accent:'#2E7DA6', gold:'#DDA34D', line:'#CFE1E8'},
+    {id:'forest',    name:'森林绿',   paper:'#F1F6EC', paperDark:'#E8EEDD', ink:'#2B3A25', accent:'#5C7A3E', gold:'#C9A227', line:'#D9E0C9'},
+    {id:'sunset',    name:'日落橙',   paper:'#FDF1E7', paperDark:'#F7E6D6', ink:'#4A2E22', accent:'#D9692F', gold:'#E3A63C', line:'#EBD9C4'},
+    {id:'lavender',  name:'薰衣草紫', paper:'#F6F2FA', paperDark:'#EFE6F5', ink:'#362B4A', accent:'#8464A8', gold:'#C9A445', line:'#E2D8ED'},
+    {id:'minimal',   name:'极简灰',   paper:'#F5F5F3', paperDark:'#ECECEA', ink:'#2A2A2A', accent:'#555555', gold:'#B08D57', line:'#DEDEDA'},
+  ];
+  const TEMPLATE_ITEMS = [
+    {cat:'数学', badge:'①', label:'每天用AI学一个知识点'},
+    {cat:'语文', badge:'④', label:'古诗：读背 + 画/写'},
+    {cat:'语文', badge:'④', label:'阅读'},
+    {cat:'语文', badge:'④', label:'古文'},
+    {cat:'语文', badge:'④', label:'日记'},
+    {cat:'英语', badge:'③', label:'SSP 一篇'},
+    {cat:'英语', badge:'③', label:'单词 10 个'},
+    {cat:'英语', badge:'③', label:'听/看 1 小时'},
+    {cat:'小四门', badge:'①', label:'纪录片 1 小时'},
+    {cat:'运动', badge:'①', label:'跳绳1公里 / 跑步2公里 / 羽毛球'},
+    {cat:'护眼', badge:'③', label:'户外活动'},
+    {cat:'护眼', badge:'③', label:'视功能 + 视力表'},
+    {cat:'护眼', badge:'③', label:'望远'},
+    {cat:'家务', badge:'①', label:'晾衣服 / 倒垃圾'},
+  ].map((it,i)=>({id:'tpl'+i, ...it}));
+
+  let db = { plans:{}, order:[] };
+  let view = 'home';          // home | editor | day
+  let activePlanId = null;
+  let curIdx = 0;
+  let editorState = null;     // {mode:'create'|'edit'|'duplicate', sourceId, name, startDate, endDate, theme, items:[]}
+  let saveTimer = null;
+  let armedDelete = null;     // id currently armed for delete confirmation
+
+  const app = document.getElementById('app');
+
+  function uid(prefix){ return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 1400);
+  }
+
+  function scheduleSave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async ()=>{
+      try{ await window.storage.set(STORAGE_KEY, JSON.stringify(db), false); }
+      catch(e){ showToast('保存失败，请重试'); console.error(e); }
+    }, 250);
+  }
+
+  function applyTheme(themeId){
+    const t = THEMES.find(x=>x.id===themeId) || THEMES[0];
+    const root = document.documentElement.style;
+    root.setProperty('--paper', t.paper);
+    root.setProperty('--paper-dark', t.paperDark);
+    root.setProperty('--ink', t.ink);
+    root.setProperty('--accent', t.accent);
+    root.setProperty('--gold', t.gold);
+    root.setProperty('--line', t.line);
+  }
+
+  function dateRangeArray(startStr, endStr){
+    const out = [];
+    const start = new Date(startStr+'T00:00:00');
+    const end = new Date(endStr+'T00:00:00');
+    if(isNaN(start)||isNaN(end)||start>end) return out;
+    for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+      const dd = new Date(d);
+      out.push({ key: dd.toISOString().slice(0,10), month: dd.getMonth()+1, date: dd.getDate(), wd: WD[dd.getDay()] });
+    }
+    return out;
+  }
+
+  function todayKey(){ return new Date().toISOString().slice(0,10); }
+
+  // ---------------- HOME ----------------
+  function renderHome(){
+    applyTheme(THEMES[0].id);
+    const ids = db.order;
+    let cards = '';
+    if(ids.length===0){
+      cards = `<div class="empty-state">还没有计划，点下面按钮新建一个吧</div>`;
+    } else {
+      cards = ids.map(id=>{
+        const p = db.plans[id];
+        if(!p) return '';
+        const theme = THEMES.find(t=>t.id===p.theme) || THEMES[0];
+        const dates = dateRangeArray(p.startDate, p.endDate);
+        const total = dates.length;
+        const done = dates.filter(d=>dayCompletion(p, d.key)>=1).length;
+        const pct = total ? Math.round(done/total*100) : 0;
+        const range = total ? `${dates[0].month}月${dates[0].date}日 - ${dates[total-1].month}月${dates[total-1].date}日 · 共${total}天` : '日期范围无效';
+        const isArmed = armedDelete===id;
+        return `
+        <div class="plan-card">
+          <div class="row1">
+            <div class="swatch" style="background:${theme.accent}"></div>
+            <div class="plan-name">${escapeHtml(p.name)}</div>
+          </div>
+          <div class="plan-range">${range} · 已完成 ${done}/${total} 天</div>
+          <div class="plan-progress"><div style="width:${pct}%; background:${theme.accent}"></div></div>
+          <div class="plan-actions">
+            <button class="primary" data-act="open" data-id="${id}">打开</button>
+            <button data-act="dup" data-id="${id}">复制</button>
+            <button class="${isArmed?'danger-arm':''}" data-act="del" data-id="${id}">${isArmed?'确定删除？':'删除'}</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    app.innerHTML = `
+      <header>
+        <div class="eyebrow">CHECK-IN PLANNER</div>
+        <h1>成长打卡</h1>
+        <div class="subtitle">我的计划</div>
+      </header>
+      ${cards}
+      <button class="new-plan-btn" id="newPlanBtn">＋ 新建计划</button>
+      <footer>数据保存在此页面中 · 建议定期导出备份</footer>
+    `;
+    app.querySelectorAll('[data-act="open"]').forEach(b=>b.addEventListener('click', ()=>{ activePlanId=b.dataset.id; curIdx=0; view='day'; render(); }));
+    app.querySelectorAll('[data-act="dup"]').forEach(b=>b.addEventListener('click', ()=>{ openEditor('duplicate', b.dataset.id); }));
+    app.querySelectorAll('[data-act="del"]').forEach(b=>b.addEventListener('click', ()=>{
+      if(armedDelete===b.dataset.id){
+        const id=b.dataset.id;
+        delete db.plans[id];
+        db.order = db.order.filter(x=>x!==id);
+        armedDelete=null;
+        scheduleSave(); render();
+        showToast('计划已删除');
+      } else {
+        armedDelete = b.dataset.id;
+        render();
+        setTimeout(()=>{ if(armedDelete===b.dataset.id){ armedDelete=null; render(); } }, 3000);
+      }
+    }));
+    document.getElementById('newPlanBtn').addEventListener('click', ()=> openEditor('create'));
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function dayCompletion(plan, key){
+    const d = plan.days[key];
+    if(!d || !plan.items.length) return 0;
+    const checked = plan.items.filter(it => d.items[it.id]).length;
+    return checked / plan.items.length;
+  }
+
+  // ---------------- EDITOR ----------------
+  function openEditor(mode, sourceId){
+    let name, startDate, endDate, theme, items;
+    const today = todayKey();
+    const in8w = new Date(); in8w.setDate(in8w.getDate()+55);
+    if(mode==='create'){
+      name = ''; startDate = today; endDate = in8w.toISOString().slice(0,10);
+      theme = THEMES[0].id; items = TEMPLATE_ITEMS.map(it=>({...it, id:uid('it')}));
+    } else if(mode==='duplicate'){
+      const src = db.plans[sourceId];
+      name = src.name + ' 副本'; startDate = src.startDate; endDate = src.endDate;
+      theme = src.theme; items = src.items.map(it=>({...it, id:uid('it')}));
+    } else { // edit
+      const src = db.plans[sourceId];
+      name = src.name; startDate = src.startDate; endDate = src.endDate;
+      theme = src.theme; items = src.items.map(it=>({...it}));
+    }
+    editorState = { mode, sourceId, name, startDate, endDate, theme, items };
+    view = 'editor';
+    render();
+  }
+
+  function renderEditor(){
+    const st = editorState;
+    applyTheme(st.theme);
+    const title = st.mode==='create' ? '新建计划' : st.mode==='duplicate' ? '复制计划' : '编辑计划';
+    app.innerHTML = `
+      <header>
+        ${db.order.length>0 || st.mode==='edit' ? `<div class="icon-btn back" id="backBtn">‹</div>` : ''}
+        <div class="eyebrow">${st.mode.toUpperCase()}</div>
+        <h1>${title}</h1>
+      </header>
+      <div class="field">
+        <label>计划名称</label>
+        <input type="text" id="fName" value="${escapeHtml(st.name)}" placeholder="例如：2026暑假打卡">
+      </div>
+      <div class="date-pair">
+        <div class="field"><label>开始日期</label><input type="date" id="fStart" value="${st.startDate}"></div>
+        <div class="field"><label>结束日期</label><input type="date" id="fEnd" value="${st.endDate}"></div>
+      </div>
+      <div class="field">
+        <label>风格配色</label>
+        <div class="theme-swatches" id="themeSwatches">
+          ${THEMES.map(t=>`<div class="theme-dot ${t.id===st.theme?'selected':''}" data-theme="${t.id}" style="background:${t.paper}; color:${t.ink}" title="${t.name}">${t.id===st.theme?'✓':''}</div>`).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label>打卡项目（分类 / 内容 / 徽章可选）</label>
+        <div id="itemRows"></div>
+        <div class="item-editor-tools">
+          <button id="addRowBtn">＋ 添加项目</button>
+          <button id="loadTplBtn">载入示例模板</button>
+          <button id="clearRowsBtn">清空</button>
+        </div>
+      </div>
+      <div class="save-bar">
+        <button class="cancel" id="cancelBtn">取消</button>
+        <button class="save" id="saveBtn">保存计划</button>
+      </div>
+    `;
+    renderItemRows();
+
+    if(document.getElementById('backBtn')) document.getElementById('backBtn').addEventListener('click', ()=>{ view = db.order.length>0?'home':'home'; render(); });
+    document.getElementById('cancelBtn').addEventListener('click', ()=>{ view = db.order.length>0?'home':'home'; render(); });
+    document.getElementById('fName').addEventListener('input', e=> st.name = e.target.value);
+    document.getElementById('fStart').addEventListener('input', e=> st.startDate = e.target.value);
+    document.getElementById('fEnd').addEventListener('input', e=> st.endDate = e.target.value);
+    document.getElementById('themeSwatches').addEventListener('click', e=>{
+      const dot = e.target.closest('.theme-dot'); if(!dot) return;
+      st.theme = dot.dataset.theme; renderEditor();
+    });
+    document.getElementById('addRowBtn').addEventListener('click', ()=>{
+      st.items.push({id:uid('it'), cat:'', badge:'', label:''});
+      renderItemRows();
+    });
+    document.getElementById('loadTplBtn').addEventListener('click', ()=>{
+      st.items = TEMPLATE_ITEMS.map(it=>({...it, id:uid('it')}));
+      renderItemRows();
+      showToast('已载入示例模板');
+    });
+    document.getElementById('clearRowsBtn').addEventListener('click', ()=>{
+      st.items = []; renderItemRows();
+    });
+    document.getElementById('saveBtn').addEventListener('click', saveEditor);
+  }
+
+  function renderItemRows(){
+    const st = editorState;
+    const host = document.getElementById('itemRows');
+    host.innerHTML = st.items.map((it,i)=>`
+      <div class="item-editor-row" data-idx="${i}">
+        <input class="cat-in" data-f="cat" placeholder="分类" value="${escapeHtml(it.cat)}">
+        <input class="lab-in" data-f="label" placeholder="打卡内容" value="${escapeHtml(it.label)}">
+        <input class="badge-in" data-f="badge" placeholder="①" value="${escapeHtml(it.badge||'')}">
+        <div class="del-btn">✕</div>
+      </div>
+    `).join('') || `<div class="hint">还没有打卡项目，点"添加项目"或"载入示例模板"开始</div>`;
+    host.querySelectorAll('.item-editor-row').forEach(row=>{
+      const idx = +row.dataset.idx;
+      row.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('input', ()=>{ st.items[idx][inp.dataset.f] = inp.value; });
+      });
+      row.querySelector('.del-btn').addEventListener('click', ()=>{
+        st.items.splice(idx,1); renderItemRows();
+      });
+    });
+  }
+
+  function saveEditor(){
+    const st = editorState;
+    if(!st.name.trim()){ showToast('请填写计划名称'); return; }
+    if(!st.startDate || !st.endDate || st.startDate > st.endDate){ showToast('日期范围不正确'); return; }
+    const cleanItems = st.items.filter(it=>it.label.trim()!=='').map(it=>({id:it.id, cat:it.cat.trim()||'未分类', badge:it.badge.trim(), label:it.label.trim()}));
+    if(cleanItems.length===0){ showToast('请至少添加一个打卡项目'); return; }
+
+    if(st.mode==='edit'){
+      const p = db.plans[st.sourceId];
+      p.name = st.name.trim(); p.startDate = st.startDate; p.endDate = st.endDate;
+      p.theme = st.theme; p.items = cleanItems;
+      activePlanId = st.sourceId;
+    } else {
+      const id = uid('plan');
+      db.plans[id] = {
+        id, name: st.name.trim(), startDate: st.startDate, endDate: st.endDate,
+        theme: st.theme, items: cleanItems, days: {}, createdAt: Date.now()
+      };
+      db.order.unshift(id);
+      activePlanId = id;
+    }
+    scheduleSave();
+    curIdx = 0; view = 'day'; render();
+    showToast('计划已保存');
+  }
+
+  // ---------------- DAY VIEW ----------------
+  function renderDay(){
+    const plan = db.plans[activePlanId];
+    if(!plan){ view='home'; render(); return; }
+    applyTheme(plan.theme);
+    const DATES = dateRangeArray(plan.startDate, plan.endDate);
+    if(DATES.length===0){ app.innerHTML = `<div class="empty-state">该计划日期范围无效，请编辑修正</div>`; return; }
+    if(curIdx>=DATES.length) curIdx = DATES.length-1;
+    const tKey = todayKey();
+
+    app.innerHTML = `
+      <header>
+        <div class="icon-btn back" id="backBtn">‹</div>
+        <div class="icon-btn edit" id="editBtn">⚙</div>
+        <div class="eyebrow">${escapeHtml(plan.name).toUpperCase()}</div>
+        <h1>${escapeHtml(plan.name)}</h1>
+        <div class="subtitle">${DATES[0].month}月${DATES[0].date}日 — ${DATES[DATES.length-1].month}月${DATES[DATES.length-1].date}日</div>
+      </header>
+      <div class="stat-row">
+        <div class="stat"><div class="num" id="statStreak">0</div><div class="lab">连续打卡</div></div>
+        <div class="stat"><div class="num" id="statDone">0/0</div><div class="lab">完成天数</div></div>
+        <div class="stat"><div class="num gold" id="statGold">0</div><div class="lab">金币总数</div></div>
+      </div>
+      <div class="strip-wrap">
+        <div class="strip-label"><span>选择日期 →</span> ${DATES.some(d=>d.key===tKey) ? `<a id="todayLink">回到今天</a>` : ''}</div>
+        <div class="strip" id="dayStrip"></div>
+      </div>
+      <div class="date-card">
+        <div class="date-head">
+          <div><div class="big" id="curDateBig"></div><div class="wd" id="curDateWd"></div></div>
+          <div class="nav-btns"><button id="prevBtn">‹</button><button id="nextBtn">›</button></div>
+        </div>
+        <div id="itemsHost"></div>
+        <div class="gold-block">
+          <div class="glabel">今日金币</div>
+          <div class="gold-ctrl"><button id="goldMinus">–</button><div class="gnum" id="goldNum">0</div><button id="goldPlus">+</button></div>
+        </div>
+      </div>
+      <div class="overview">
+        <div class="overview-title">计划总览</div>
+        <div class="weeks" id="weeksHost"></div>
+      </div>
+      <div class="export-bar">
+        <button id="exportCsv">导出 CSV</button>
+        <button id="exportJson" class="secondary">导出 JSON</button>
+      </div>
+      <footer>数据保存在此页面中 · 建议定期导出备份</footer>
+    `;
+
+    document.getElementById('backBtn').addEventListener('click', ()=>{ view='home'; render(); });
+    document.getElementById('editBtn').addEventListener('click', ()=> openEditor('edit', activePlanId));
+    const todayLink = document.getElementById('todayLink');
+    if(todayLink) todayLink.addEventListener('click', ()=>{ curIdx = DATES.findIndex(d=>d.key===tKey); renderDayInner(plan, DATES, true); });
+
+    document.getElementById('prevBtn').addEventListener('click', ()=>{ if(curIdx>0){ curIdx--; renderDayInner(plan, DATES, true);} });
+    document.getElementById('nextBtn').addEventListener('click', ()=>{ if(curIdx<DATES.length-1){ curIdx++; renderDayInner(plan, DATES, true);} });
+    document.getElementById('goldPlus').addEventListener('click', ()=>{ getDay(plan, DATES[curIdx].key).gold += 1; scheduleSave(); renderDayInner(plan, DATES, false); });
+    document.getElementById('goldMinus').addEventListener('click', ()=>{ const d=getDay(plan, DATES[curIdx].key); d.gold=Math.max(0,d.gold-1); scheduleSave(); renderDayInner(plan, DATES, false); });
+    document.getElementById('exportCsv').addEventListener('click', ()=> exportCsv(plan, DATES));
+    document.getElementById('exportJson').addEventListener('click', ()=> exportJson(plan));
+
+    renderDayInner(plan, DATES, true);
+  }
+
+  function getDay(plan, key){
+    if(!plan.days[key]) plan.days[key] = {items:{}, gold:0};
+    return plan.days[key];
+  }
+
+  function renderDayInner(plan, DATES, scrollStrip){
+    // strip
+    const strip = document.getElementById('dayStrip');
+    strip.innerHTML = '';
+    DATES.forEach((d,i)=>{
+      const comp = dayCompletion(plan, d.key);
+      const el = document.createElement('div');
+      el.className = 'day-pill' + (i===curIdx?' selected':'') + (comp>=1?' done':(comp>0?' partial':''));
+      el.innerHTML = `<div class="wd">${d.wd}</div><div class="dnum">${d.date}</div><div class="dot"></div>`;
+      el.addEventListener('click', ()=>{ curIdx=i; renderDayInner(plan, DATES, true); });
+      strip.appendChild(el);
+    });
+    if(scrollStrip){ const sel = strip.querySelector('.selected'); if(sel) sel.scrollIntoView({inline:'center', behavior:'smooth'}); }
+
+    // date card
+    const d = DATES[curIdx];
+    document.getElementById('curDateBig').textContent = `${d.month}月${d.date}日`;
+    document.getElementById('curDateWd').textContent = d.wd;
+    const dayData = getDay(plan, d.key);
+    const cats = [...new Set(plan.items.map(it=>it.cat))];
+    const itemsHost = document.getElementById('itemsHost');
+    itemsHost.innerHTML = '';
+    cats.forEach(cat=>{
+      const items = plan.items.filter(it=>it.cat===cat);
+      const doneCount = items.filter(it=>dayData.items[it.id]).length;
+      const block = document.createElement('div');
+      block.className = 'cat-block';
+      block.innerHTML = `<div class="cat-title">${escapeHtml(cat)} <span class="badge">${doneCount}/${items.length}</span></div>`;
+      items.forEach(it=>{
+        const row = document.createElement('div');
+        row.className = 'item-row' + (dayData.items[it.id] ? ' checked':'');
+        row.innerHTML = `<div class="stamp">✓</div><div class="item-label">${escapeHtml(it.label)}${it.badge?` <span style="opacity:.5">${escapeHtml(it.badge)}</span>`:''}</div>`;
+        row.addEventListener('click', ()=>{ dayData.items[it.id] = !dayData.items[it.id]; scheduleSave(); renderDayInner(plan, DATES, false); });
+        block.appendChild(row);
+      });
+      itemsHost.appendChild(block);
+    });
+    document.getElementById('goldNum').textContent = dayData.gold||0;
+
+    // weeks overview
+    const weeksHost = document.getElementById('weeksHost');
+    weeksHost.innerHTML = '';
+    const tKey = todayKey();
+    for(let w=0; w*7<DATES.length; w++){
+      const row = document.createElement('div');
+      row.className = 'week-row';
+      for(let i=0;i<7;i++){
+        const idx = w*7+i;
+        if(idx>=DATES.length) break;
+        const dd = DATES[idx];
+        const comp = dayCompletion(plan, dd.key);
+        const cell = document.createElement('div');
+        cell.className = 'cell' + (comp>=1?' done':(comp>0?' partial':'')) + (dd.key===tKey?' today':'');
+        cell.title = `${dd.month}月${dd.date}日`;
+        cell.addEventListener('click', ()=>{ curIdx=idx; renderDayInner(plan, DATES, true); });
+        row.appendChild(cell);
+      }
+      weeksHost.appendChild(row);
+    }
+
+    // stats
+    let doneDays=0, goldTotal=0;
+    DATES.forEach(dt=>{
+      if(dayCompletion(plan, dt.key)>=1) doneDays++;
+      const dd = plan.days[dt.key];
+      if(dd) goldTotal += (dd.gold||0);
+    });
+    document.getElementById('statDone').textContent = `${doneDays}/${DATES.length}`;
+    document.getElementById('statGold').textContent = goldTotal;
+    let streak=0;
+    for(let i=DATES.length-1;i>=0;i--){
+      if(dayCompletion(plan, DATES[i].key)>=1) streak++; else break;
+    }
+    document.getElementById('statStreak').textContent = streak;
+  }
+
+  function download(filename, content, mime){
+    const blob = new Blob([content], {type:mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }
+
+  function exportCsv(plan, DATES){
+    const header = ['日期','星期', ...plan.items.map(it=>`${it.cat}-${it.label}`), '完成率','金币'];
+    const rows = [header];
+    DATES.forEach(d=>{
+      const dd = plan.days[d.key] || {items:{}, gold:0};
+      rows.push([
+        `${d.month}月${d.date}日`, d.wd,
+        ...plan.items.map(it=> dd.items[it.id] ? '1':'0'),
+        `${Math.round(dayCompletion(plan,d.key)*100)}%`, dd.gold||0
+      ]);
+    });
+    const csv = '\uFEFF' + rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    download(`${plan.name}-打卡记录.csv`, csv, 'text/csv;charset=utf-8');
+    showToast('CSV 已导出');
+  }
+  function exportJson(plan){
+    download(`${plan.name}-打卡记录.json`, JSON.stringify(plan, null, 2), 'application/json');
+    showToast('JSON 已导出');
+  }
+
+  // ---------------- ROUTER ----------------
+  function render(){
+    if(view==='home') renderHome();
+    else if(view==='editor') renderEditor();
+    else if(view==='day') renderDay();
+  }
+
+  async function init(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, false);
+      if(res && res.value){
+        const parsed = JSON.parse(res.value);
+        if(parsed.plans) db = parsed;
+      }
+    }catch(e){ /* 无历史数据 */ }
+    render();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
