@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>成长打卡</title>
+<title>计划🔛打卡</title>
 <style>
   :root{
     --paper:#FBF6EC; --paper-dark:#F2E9D8; --ink:#25314F; --ink-soft:#5B6584;
@@ -92,6 +92,9 @@
   .item-editor-row .cat-in{width:64px; flex:0 0 auto;}
   .item-editor-row .lab-in{flex:1;}
   .item-editor-row .badge-in{width:34px; flex:0 0 auto; text-align:center;}
+  .item-editor-row .pts-in{width:38px; flex:0 0 auto; text-align:center;}
+  .item-editor-row.item-editor-head{margin-bottom:3px;}
+  .item-editor-row.item-editor-head input{display:none;}
   .item-editor-row .del-btn{
     width:26px; height:26px; border-radius:50%; border:1px solid var(--line); background:var(--paper-dark);
     color:var(--ink-soft); font-size:13px; cursor:pointer; flex:0 0 auto;
@@ -146,6 +149,7 @@
   .item-row.checked .item-label{color:var(--ink-soft); text-decoration:line-through;}
   .gold-block{display:flex; align-items:center; justify-content:space-between; background:color-mix(in srgb, var(--gold) 18%, var(--card)); border:1px solid color-mix(in srgb, var(--gold) 45%, var(--line)); border-radius:10px; padding:10px 12px; margin-top:8px;}
   .gold-block .glabel{font-size:13px;}
+  .gold-block .glabel .sub{display:block; font-size:10px; color:var(--ink-soft); margin-top:1px;}
   .gold-ctrl{display:flex; align-items:center; gap:10px;}
   .gold-ctrl button{width:28px; height:28px; border-radius:50%; border:1px solid var(--gold); background:var(--card); color:var(--gold); font-size:16px; cursor:pointer;}
   .gold-ctrl .gnum{font-family:var(--serif); font-size:18px; min-width:22px; text-align:center; color:var(--gold);}
@@ -196,7 +200,7 @@
     {cat:'护眼', badge:'③', label:'视功能 + 视力表'},
     {cat:'护眼', badge:'③', label:'望远'},
     {cat:'家务', badge:'①', label:'晾衣服 / 倒垃圾'},
-  ].map((it,i)=>({id:'tpl'+i, ...it}));
+  ].map((it,i)=>({id:'tpl'+i, points:1, ...it}));
 
   let db = { plans:{}, order:[] };
   let view = 'home';          // home | editor | day
@@ -216,10 +220,30 @@
     setTimeout(()=>t.classList.remove('show'), 1400);
   }
 
+  // 优先使用 Claude 提供的云端存储；如果不可用（比如把网页下载到本地直接用浏览器打开），
+  // 自动改用浏览器自带的 localStorage，保证在任何环境下都能正常保存。
+  const hasCloudStorage = (typeof window.storage !== 'undefined' && window.storage && typeof window.storage.set === 'function');
+
+  async function loadDb(){
+    if(hasCloudStorage){
+      const res = await window.storage.get(STORAGE_KEY, false);
+      return res && res.value ? res.value : null;
+    } else {
+      return localStorage.getItem(STORAGE_KEY);
+    }
+  }
+  async function persistDb(){
+    if(hasCloudStorage){
+      await window.storage.set(STORAGE_KEY, JSON.stringify(db), false);
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    }
+  }
+
   function scheduleSave(){
     clearTimeout(saveTimer);
     saveTimer = setTimeout(async ()=>{
-      try{ await window.storage.set(STORAGE_KEY, JSON.stringify(db), false); }
+      try{ await persistDb(); }
       catch(e){ showToast('保存失败，请重试'); console.error(e); }
     }, 250);
   }
@@ -286,7 +310,7 @@
     app.innerHTML = `
       <header>
         <div class="eyebrow">CHECK-IN PLANNER</div>
-        <h1>成长打卡</h1>
+        <h1>计划🔛打卡</h1>
         <div class="subtitle">我的计划</div>
       </header>
       ${cards}
@@ -393,7 +417,7 @@
       st.theme = dot.dataset.theme; renderEditor();
     });
     document.getElementById('addRowBtn').addEventListener('click', ()=>{
-      st.items.push({id:uid('it'), cat:'', badge:'', label:''});
+      st.items.push({id:uid('it'), cat:'', badge:'', label:'', points:1});
       renderItemRows();
     });
     document.getElementById('loadTplBtn').addEventListener('click', ()=>{
@@ -410,18 +434,28 @@
   function renderItemRows(){
     const st = editorState;
     const host = document.getElementById('itemRows');
-    host.innerHTML = st.items.map((it,i)=>`
+    host.innerHTML = `
+      <div class="item-editor-row item-editor-head">
+        <div class="cat-in"></div><div class="lab-in"></div>
+        <div class="badge-in" style="text-align:center; font-size:10px; color:var(--ink-soft);">徽章</div>
+        <div class="pts-in" style="text-align:center; font-size:10px; color:var(--ink-soft);">积分</div>
+        <div style="width:26px;"></div>
+      </div>
+    ` + (st.items.map((it,i)=>`
       <div class="item-editor-row" data-idx="${i}">
         <input class="cat-in" data-f="cat" placeholder="分类" value="${escapeHtml(it.cat)}">
         <input class="lab-in" data-f="label" placeholder="打卡内容" value="${escapeHtml(it.label)}">
         <input class="badge-in" data-f="badge" placeholder="①" value="${escapeHtml(it.badge||'')}">
+        <input class="pts-in" data-f="points" type="number" min="0" step="1" placeholder="1" value="${it.points!=null?it.points:1}">
         <div class="del-btn">✕</div>
       </div>
-    `).join('') || `<div class="hint">还没有打卡项目，点"添加项目"或"载入示例模板"开始</div>`;
-    host.querySelectorAll('.item-editor-row').forEach(row=>{
+    `).join('') || `<div class="hint">还没有打卡项目，点"添加项目"或"载入示例模板"开始</div>`);
+    host.querySelectorAll('.item-editor-row:not(.item-editor-head)').forEach(row=>{
       const idx = +row.dataset.idx;
       row.querySelectorAll('input').forEach(inp=>{
-        inp.addEventListener('input', ()=>{ st.items[idx][inp.dataset.f] = inp.value; });
+        inp.addEventListener('input', ()=>{
+          st.items[idx][inp.dataset.f] = inp.dataset.f==='points' ? inp.value : inp.value;
+        });
       });
       row.querySelector('.del-btn').addEventListener('click', ()=>{
         st.items.splice(idx,1); renderItemRows();
@@ -433,7 +467,11 @@
     const st = editorState;
     if(!st.name.trim()){ showToast('请填写计划名称'); return; }
     if(!st.startDate || !st.endDate || st.startDate > st.endDate){ showToast('日期范围不正确'); return; }
-    const cleanItems = st.items.filter(it=>it.label.trim()!=='').map(it=>({id:it.id, cat:it.cat.trim()||'未分类', badge:it.badge.trim(), label:it.label.trim()}));
+    const cleanItems = st.items.filter(it=>it.label.trim()!=='').map(it=>{
+      let pts = parseInt(it.points, 10);
+      if(isNaN(pts) || pts < 0) pts = 1;
+      return {id:it.id, cat:it.cat.trim()||'未分类', badge:it.badge.trim(), label:it.label.trim(), points:pts};
+    });
     if(cleanItems.length===0){ showToast('请至少添加一个打卡项目'); return; }
 
     if(st.mode==='edit'){
@@ -476,7 +514,7 @@
       <div class="stat-row">
         <div class="stat"><div class="num" id="statStreak">0</div><div class="lab">连续打卡</div></div>
         <div class="stat"><div class="num" id="statDone">0/0</div><div class="lab">完成天数</div></div>
-        <div class="stat"><div class="num gold" id="statGold">0</div><div class="lab">金币总数</div></div>
+        <div class="stat"><div class="num gold" id="statGold">0</div><div class="lab">积分总数</div></div>
       </div>
       <div class="strip-wrap">
         <div class="strip-label"><span>选择日期 →</span> ${DATES.some(d=>d.key===tKey) ? `<a id="todayLink">回到今天</a>` : ''}</div>
@@ -489,7 +527,7 @@
         </div>
         <div id="itemsHost"></div>
         <div class="gold-block">
-          <div class="glabel">今日金币</div>
+          <div class="glabel">今日积分<span class="sub" id="goldBreakdown"></span></div>
           <div class="gold-ctrl"><button id="goldMinus">–</button><div class="gnum" id="goldNum">0</div><button id="goldPlus">+</button></div>
         </div>
       </div>
@@ -511,8 +549,8 @@
 
     document.getElementById('prevBtn').addEventListener('click', ()=>{ if(curIdx>0){ curIdx--; renderDayInner(plan, DATES, true);} });
     document.getElementById('nextBtn').addEventListener('click', ()=>{ if(curIdx<DATES.length-1){ curIdx++; renderDayInner(plan, DATES, true);} });
-    document.getElementById('goldPlus').addEventListener('click', ()=>{ getDay(plan, DATES[curIdx].key).gold += 1; scheduleSave(); renderDayInner(plan, DATES, false); });
-    document.getElementById('goldMinus').addEventListener('click', ()=>{ const d=getDay(plan, DATES[curIdx].key); d.gold=Math.max(0,d.gold-1); scheduleSave(); renderDayInner(plan, DATES, false); });
+    document.getElementById('goldPlus').addEventListener('click', ()=>{ getDay(plan, DATES[curIdx].key).bonus += 1; scheduleSave(); renderDayInner(plan, DATES, false); });
+    document.getElementById('goldMinus').addEventListener('click', ()=>{ const d=getDay(plan, DATES[curIdx].key); d.bonus=Math.max(0,d.bonus-1); scheduleSave(); renderDayInner(plan, DATES, false); });
     document.getElementById('exportCsv').addEventListener('click', ()=> exportCsv(plan, DATES));
     document.getElementById('exportJson').addEventListener('click', ()=> exportJson(plan));
 
@@ -520,8 +558,21 @@
   }
 
   function getDay(plan, key){
-    if(!plan.days[key]) plan.days[key] = {items:{}, gold:0};
-    return plan.days[key];
+    if(!plan.days[key]) plan.days[key] = {items:{}, bonus:0};
+    const d = plan.days[key];
+    if(d.bonus == null) d.bonus = d.gold || 0; // 兼容旧版本存的 gold 字段
+    return d;
+  }
+
+  // 勾选项目自动累计的积分（每个项目按其设定的积分值计入）
+  function autoPoints(plan, dayData){
+    return plan.items.reduce((sum,it)=> sum + (dayData.items[it.id] ? (it.points!=null?it.points:1) : 0), 0);
+  }
+  // 当天总积分 = 自动累计积分 + 额外奖励
+  function dayTotalPoints(plan, key){
+    const dd = plan.days[key];
+    if(!dd) return 0;
+    return autoPoints(plan, dd) + (dd.bonus != null ? dd.bonus : (dd.gold||0));
   }
 
   function renderDayInner(plan, DATES, scrollStrip){
@@ -555,13 +606,16 @@
       items.forEach(it=>{
         const row = document.createElement('div');
         row.className = 'item-row' + (dayData.items[it.id] ? ' checked':'');
-        row.innerHTML = `<div class="stamp">✓</div><div class="item-label">${escapeHtml(it.label)}${it.badge?` <span style="opacity:.5">${escapeHtml(it.badge)}</span>`:''}</div>`;
+        const pts = it.points!=null ? it.points : 1;
+        row.innerHTML = `<div class="stamp">✓</div><div class="item-label">${escapeHtml(it.label)}${it.badge?` <span style="opacity:.5">${escapeHtml(it.badge)}</span>`:''}</div><div style="font-size:11px; color:var(--gold); flex:0 0 auto;">+${pts}</div>`;
         row.addEventListener('click', ()=>{ dayData.items[it.id] = !dayData.items[it.id]; scheduleSave(); renderDayInner(plan, DATES, false); });
         block.appendChild(row);
       });
       itemsHost.appendChild(block);
     });
-    document.getElementById('goldNum').textContent = dayData.gold||0;
+    const auto = autoPoints(plan, dayData);
+    document.getElementById('goldNum').textContent = auto + (dayData.bonus||0);
+    document.getElementById('goldBreakdown').textContent = `打卡自动 ${auto} + 额外奖励 ${dayData.bonus||0}`;
 
     // weeks overview
     const weeksHost = document.getElementById('weeksHost');
@@ -588,8 +642,7 @@
     let doneDays=0, goldTotal=0;
     DATES.forEach(dt=>{
       if(dayCompletion(plan, dt.key)>=1) doneDays++;
-      const dd = plan.days[dt.key];
-      if(dd) goldTotal += (dd.gold||0);
+      goldTotal += dayTotalPoints(plan, dt.key);
     });
     document.getElementById('statDone').textContent = `${doneDays}/${DATES.length}`;
     document.getElementById('statGold').textContent = goldTotal;
@@ -609,14 +662,16 @@
   }
 
   function exportCsv(plan, DATES){
-    const header = ['日期','星期', ...plan.items.map(it=>`${it.cat}-${it.label}`), '完成率','金币'];
+    const header = ['日期','星期', ...plan.items.map(it=>`${it.cat}-${it.label}(${it.points!=null?it.points:1}分)`), '完成率','自动积分','额外奖励','总积分'];
     const rows = [header];
     DATES.forEach(d=>{
-      const dd = plan.days[d.key] || {items:{}, gold:0};
+      const dd = plan.days[d.key] || {items:{}, bonus:0};
+      const auto = autoPoints(plan, dd);
+      const bonus = dd.bonus!=null ? dd.bonus : (dd.gold||0);
       rows.push([
         `${d.month}月${d.date}日`, d.wd,
         ...plan.items.map(it=> dd.items[it.id] ? '1':'0'),
-        `${Math.round(dayCompletion(plan,d.key)*100)}%`, dd.gold||0
+        `${Math.round(dayCompletion(plan,d.key)*100)}%`, auto, bonus, auto+bonus
       ]);
     });
     const csv = '\uFEFF' + rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
@@ -637,12 +692,13 @@
 
   async function init(){
     try{
-      const res = await window.storage.get(STORAGE_KEY, false);
-      if(res && res.value){
-        const parsed = JSON.parse(res.value);
+      const raw = await loadDb();
+      if(raw){
+        const parsed = JSON.parse(raw);
         if(parsed.plans) db = parsed;
       }
     }catch(e){ /* 无历史数据 */ }
+    if(!hasCloudStorage) showToast('当前在浏览器本地保存数据');
     render();
   }
   init();
